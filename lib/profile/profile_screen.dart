@@ -99,10 +99,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : null,
       builder: (context, snapshot) {
         String displayName = "GUEST USER";
-        if (snapshot.hasData && snapshot.data!.exists) {
-          var data = snapshot.data!.data() as Map<String, dynamic>;
-          // Priority: Edited Display Name > Original Signup Name > Email prefix
-          displayName = data['displayName'] ?? data['name'] ?? user?.email?.split('@')[0].toUpperCase() ?? "GUEST USER";
+        String displayEmail = "guest@wallora.com";
+
+        if (user != null) {
+          // Default fallbacks from Firebase Auth
+          displayName = user.displayName ?? user.email?.split('@')[0].toUpperCase() ?? "USER";
+          displayEmail = user.email ?? "";
+
+          // Override with Firestore data if it exists
+          if (snapshot.hasData && snapshot.data!.exists) {
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+            displayName = data['displayName'] ?? data['name'] ?? displayName;
+          }
         }
 
         return SingleChildScrollView(
@@ -125,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 15),
               Text(displayName, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              Text(user?.email ?? "guest@wallora.com", style: const TextStyle(color: Colors.white54, fontSize: 14)),
+              Text(displayEmail, style: const TextStyle(color: Colors.white54, fontSize: 14)),
               
               const SizedBox(height: 40),
               
@@ -144,8 +152,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: "Downloads", 
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DownloadsScreen()))
                     ),
-                    const Divider(color: Colors.white10, height: 1),
-                    _buildOptionTile(icon: Icons.settings_outlined, title: "Account Settings", onTap: _editUsername),
+                    if (user != null) ...[
+                      const Divider(color: Colors.white10, height: 1),
+                      _buildOptionTile(icon: Icons.settings_outlined, title: "Account Settings", onTap: _editUsername),
+                    ]
                   ],
                 ),
               ),
@@ -177,18 +187,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(15)),
                 child: Column(
                   children: [
-                    _buildOptionTile(
-                      icon: Icons.login_rounded, 
-                      title: "Login",
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
-                    ),
-                    const Divider(color: Colors.white10, height: 1),
-                    _buildOptionTile(
-                      icon: Icons.logout, 
-                      title: "Logout", 
-                      iconColor: Colors.redAccent,
-                      onTap: () => _showLogoutDialog(context),
-                    ),
+                    if (user == null)
+                      _buildOptionTile(
+                        icon: Icons.login_rounded, 
+                        title: "Login / Sign Up",
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
+                      ),
+                    if (user != null)
+                      _buildOptionTile(
+                        icon: Icons.logout, 
+                        title: "Logout", 
+                        iconColor: Colors.redAccent,
+                        onTap: () => _showLogoutDialog(context),
+                      ),
                   ],
                 ),
               ),
