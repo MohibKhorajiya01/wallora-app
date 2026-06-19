@@ -58,10 +58,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
         if (mounted) {
           SnackBarUtils.showMsg(context, "Email Successfully Verified!");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
+          Navigator.pushReplacementNamed(context, '/home');
         }
       }
     }
@@ -199,10 +196,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   timer?.cancel();
                   await FirebaseAuth.instance.signOut();
                   if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/login');
                   }
                 },
                 child: const Text(

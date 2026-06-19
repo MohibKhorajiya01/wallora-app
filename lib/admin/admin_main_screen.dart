@@ -23,19 +23,16 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
         backgroundColor: Colors.black,
-        elevation: 0,
-        centerTitle: false,
-        title: Row(
-          children: [
-            const Icon(Icons.admin_panel_settings, color: Colors.white, size: 28),
-            const SizedBox(width: 10),
-            const Text("WALLORA ADMIN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 20)),
-          ],
-        ),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.black,
+          elevation: 0,
+          centerTitle: true,
+        title: const Text("WALLORA ADMIN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontSize: 20)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
@@ -77,6 +74,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
             BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: "Profile"),
           ],
         ),
+      ),
       ),
     );
   }

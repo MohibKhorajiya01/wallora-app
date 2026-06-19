@@ -100,14 +100,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text("Overview", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-              Text("LAST 24 HOURS", style: TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            ],
-          ),
+          const Text("Overview", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
           const SizedBox(height: 15),
           const OverviewCards(),
           

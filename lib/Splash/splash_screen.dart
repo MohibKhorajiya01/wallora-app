@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:wallora/home/home_screen.dart';
-import '../auth/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,12 +14,46 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    });
+    _checkAuthState();
+  }
+
+  Future<void> _checkAuthState() async {
+    await Future.delayed(const Duration(seconds: 2)); // Minimum splash duration
+
+    if (!mounted) return;
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        bool isAdmin = false;
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>?;
+          if (data != null && data.containsKey('isAdmin')) {
+            isAdmin = data['isAdmin'] == true;
+          }
+        }
+
+        if (!mounted) return;
+
+        if (isAdmin) {
+          Navigator.pushReplacementNamed(context, '/admin');
+        } else if (!user.emailVerified) {
+          Navigator.pushReplacementNamed(context, '/verify');
+        } else {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (e) {
+        if (mounted) Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      if (mounted) Navigator.pushReplacementNamed(context, '/home'); // Guest users go to Home
+    }
   }
 
   @override

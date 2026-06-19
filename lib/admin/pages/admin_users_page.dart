@@ -1,8 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../utils/snackbar_utils.dart';
 
-class AdminUsersPage extends StatelessWidget {
+class AdminUsersPage extends StatefulWidget {
   const AdminUsersPage({super.key});
+
+  @override
+  State<AdminUsersPage> createState() => _AdminUsersPageState();
+}
+
+class _AdminUsersPageState extends State<AdminUsersPage> {
+  Future<void> _deleteUser(String docId, String name) async {
+    // Step 1 Verification
+    bool? step1 = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text("Remove User?", style: TextStyle(color: Colors.white)),
+        content: Text("Are you sure you want to remove $name?", style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes, Proceed", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (step1 != true) return;
+
+    // Step 2 Final Verification
+    if (!mounted) return;
+    bool? step2 = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text("Final Warning", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+        content: Text("This action is IRREVERSIBLE. $name's data will be permanently deleted. Are you REALLY sure?", style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel", style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete Permanently", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (step2 == true) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(docId).delete();
+        if (mounted) SnackBarUtils.showMsg(context, "User deleted successfully", isError: false);
+      } catch (e) {
+        if (mounted) SnackBarUtils.showMsg(context, "Failed to delete user", isError: true);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +82,23 @@ class AdminUsersPage extends StatelessWidget {
                 );
               }
               
-              var docs = snapshot.data!.docs;
+              var docs = snapshot.data!.docs.where((doc) {
+                var data = doc.data() as Map<String, dynamic>;
+                return data['isAdmin'] != true;
+              }).toList();
+
+              if (docs.isEmpty) {
+                return const Center(
+                  child: Text("No normal users found.", style: TextStyle(color: Colors.white54, fontSize: 16)),
+                );
+              }
               
               return ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
-                  var data = docs[index].data() as Map<String, dynamic>;
+                  var doc = docs[index];
+                  var data = doc.data() as Map<String, dynamic>;
                   String name = data['name'] ?? 'Unknown User';
                   String email = data['email'] ?? 'No Email';
                   Timestamp? createdAt = data['createdAt'] as Timestamp?;
@@ -79,6 +145,10 @@ class AdminUsersPage extends StatelessWidget {
                             Text(dateStr, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 22),
+                          onPressed: () => _deleteUser(doc.id, name),
+                        )
                       ],
                     ),
                   );

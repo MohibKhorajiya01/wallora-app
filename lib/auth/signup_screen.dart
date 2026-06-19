@@ -4,7 +4,7 @@ import 'login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/snackbar_utils.dart';
-import 'verify_email_screen.dart';
+import '../widgets/custom_text_field.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -32,10 +32,7 @@ class _SignupScreenState extends State<SignupScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
+                Navigator.pushReplacementNamed(context, '/home');
               },
               child: const Text(
                 "Skip",
@@ -75,7 +72,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 50),
 
-                    _buildTextField(
+                    CustomTextField(
                       controller: _nameController,
                       label: "FULL NAME",
                       hint: "Enter your name",
@@ -87,7 +84,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    _buildTextField(
+                    CustomTextField(
                       controller: _emailController,
                       label: "EMAIL ADDRESS",
                       hint: "Enter your email",
@@ -100,7 +97,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    _buildTextField(
+                    CustomTextField(
                       controller: _passwordController,
                       label: "PASSWORD",
                       hint: "Enter your password",
@@ -141,7 +138,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         const Text("Already have an account? ", style: TextStyle(color: Colors.white54)),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                            Navigator.pushNamed(context, '/login');
                           },
                           child: const Text(
                             "Login",
@@ -160,46 +157,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
-          validator: validator,
-          cursorColor: Colors.white,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.white30),
-            prefixIcon: Icon(icon, color: Colors.white60, size: 20),
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12), // Lighter fill for better visibility
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.white12)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.white70)),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Future<void> _handleSignup() async {
     if (_formKey.currentState!.validate()) {
@@ -220,10 +178,11 @@ class _SignupScreenState extends State<SignupScreen> {
         
         if (mounted) {
           Navigator.pop(context); // Close loading
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const VerifyEmailScreen()));
+          Navigator.pushReplacementNamed(context, '/verify');
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) Navigator.pop(context);
+        debugPrint("FirebaseAuthException during signup: ${e.code}");
         String errorMessage = "An error occurred";
         if (e.code == 'email-already-in-use') errorMessage = "Email already registered";
         else if (e.code == 'weak-password') errorMessage = "Password is too weak";
@@ -231,6 +190,8 @@ class _SignupScreenState extends State<SignupScreen> {
         SnackBarUtils.showMsg(context, errorMessage, isError: true);
       } catch (e) {
         if (mounted) Navigator.pop(context);
+        debugPrint("Unknown error during signup: $e");
+        SnackBarUtils.showMsg(context, "An unexpected error occurred.", isError: true);
       }
     }
   }

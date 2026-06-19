@@ -30,11 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
             onPressed: () {
               FirebaseAuth.instance.signOut();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
             child: const Text("Logout"),
           ),
@@ -191,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildOptionTile(
                         icon: Icons.login_rounded, 
                         title: "Login / Sign Up",
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen())),
+                        onTap: () => Navigator.pushNamed(context, '/login'),
                       ),
                     if (user != null)
                       _buildOptionTile(

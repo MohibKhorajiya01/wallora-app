@@ -1,11 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:wallora/auth/signup_screen.dart';
-import '/home/home_screen.dart' show HomeScreen;
-import '/admin/admin_main_screen.dart';
-import '../utils/snackbar_utils.dart';
-import 'verify_email_screen.dart';
+import '../home/home_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/custom_text_field.dart';
+import '../utils/snackbar_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,10 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
+                Navigator.pushReplacementNamed(context, '/home');
               },
               child: const Text(
                 "Skip",
@@ -75,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 60),
 
-                    _buildTextField(
+                    CustomTextField(
                       controller: _emailController,
                       label: "EMAIL ADDRESS",
                       hint: "Enter your email",
@@ -88,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 25),
 
-                    _buildTextField(
+                    CustomTextField(
                       controller: _passwordController,
                       label: "PASSWORD",
                       hint: "Enter your password",
@@ -129,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text("New here? ", style: TextStyle(color: Colors.white54)),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupScreen()));
+                            Navigator.pushNamed(context, '/signup');
                           },
                           child: const Text(
                             "Create Account",
@@ -148,47 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
-          validator: validator,
-          cursorColor: Colors.white,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.white30),
-            prefixIcon: Icon(icon, color: Colors.white60, size: 20),
-            filled: true,
-            fillColor: Colors.white.withOpacity(0.12), // Lighter fill for visibility
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white12)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.white70)),
-            errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -224,26 +179,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (isAdmin) {
           if (mounted) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminMainScreen()));
+            Navigator.pushReplacementNamed(context, '/admin');
           }
           return;
         }
 
         if (!userCredential.user!.emailVerified) {
           if (mounted) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const VerifyEmailScreen()));
+            Navigator.pushReplacementNamed(context, '/verify');
           }
           return;
         }
 
         if (mounted) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+          Navigator.pushReplacementNamed(context, '/home');
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) Navigator.pop(context);
+        debugPrint("FirebaseAuthException during login: ${e.code}");
         SnackBarUtils.showMsg(context, "Error: ${e.message}", isError: true);
       } catch (e) {
         if (mounted) Navigator.pop(context);
+        debugPrint("Unknown error during login: $e");
+        SnackBarUtils.showMsg(context, "An unexpected error occurred.", isError: true);
       }
     }
   }

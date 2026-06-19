@@ -1,12 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:wallora/home/home_screen.dart';
+import 'home/home_screen.dart';
 import 'Splash/splash_screen.dart';
 import 'auth/login_screen.dart';
 import 'auth/signup_screen.dart';
+import 'auth/verify_email_screen.dart';
+import 'admin/admin_main_screen.dart';
 import 'firebase_options.dart';
-import '../home/home_screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +15,6 @@ void main() async {
   );
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -40,8 +39,9 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
+        '/verify': (context) => const VerifyEmailScreen(),
+        '/admin': (context) => const AdminMainScreen(),
       },
     );
-
   }
 }
